@@ -12,7 +12,7 @@ bg_color = pygame.Color('white')
 black_color = pygame.Color('black')
 white_color = pygame.Color('white')
 inner_hover_color = (224, 224, 224)
-button_font = pygame.font.Font("freesansbold.ttf", 20)
+button_font = pygame.font.Font("freesansbold.ttf", 15)
 
 class Button():
 
@@ -56,19 +56,20 @@ class Cell():
         self.x=col*self.width+12
         self.y=row*self.height+10
         self.cellRect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.text = button_font.render(f"{value}", False, black_color)
 
     def setValue(self, value):
         self.value = value
 
     def drawCell(self):
         pygame.draw.rect(screen,black_color, self.cellRect, 1)
-
+        textX = (self.x+(self.x+self.width))/2 - 2
+        textY = (self.y+(self.y+self.height))/2 - 2
+        screen.blit(self.text, (textX, textY))
 
 class Board():
 
-    def __init__(self, rows, cols):
-        self.rows = rows
-        self.cols = cols
+    def __init__(self):
         self.width = screen_width - 25
         self.height = screen_height - 105
         self.surface = pygame.Rect(12, 10, self.width, self.height)
@@ -97,7 +98,7 @@ class Board():
         pygame.draw.line(screen, black_color, (12, 55*3 + 10), (self.width+10, 55*3+10), 3)
         pygame.draw.line(screen, black_color, (12, 55*6 + 10), (self.width+10, 55*6+10), 3)
 
-board = Board(2, 3)
+board = Board()
 resetButton = Button(10, "Reset")
 solveButton = Button(270, "Solve")
 
