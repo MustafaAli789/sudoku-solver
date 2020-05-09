@@ -99,9 +99,11 @@ class Board():
         self.surface = pygame.Rect(12, 10, self.width, self.height)
         self.cells = []
         self.resetBoard()
+        self.clickedCell = [0, 0]
 
     def resetBoard(self):
         self.cells = []
+        self.clickedCell = [0, 0]
         startingBoard=[[3, 0, 6, 5, 0, 8, 4, 0, 0],
          [5, 2, 0, 0, 0, 0, 0, 0, 0],
          [0, 8, 7, 0, 0, 0, 0, 3, 1],
@@ -115,6 +117,7 @@ class Board():
             self.cells.append([])
             for j in range(9):
                 self.cells[i].append(Cell(i, j, startingBoard[i][j]))
+        self.cells[0][0].setClicked(True)
 
     def autoGenerate(self):
         print('TODO AUTOGENERATE BOARD')
@@ -189,23 +192,32 @@ class Board():
         return win
 
     # kinda redundant
-    def clickCell(self):
-        for i in range(81):
-            row = i // 9
-            col = i % 9
-            if self.cells[row][col].wasClicked():
-                self.cells[row][col].setClicked(True)
-            else:
-                self.cells[row][col].setClicked(False)
+    # def clickCell(self):
+    #     for i in range(81):
+    #         row = i // 9
+    #         col = i % 9
+    #         if self.cells[row][col].wasClicked():
+    #             self.cells[row][col].setClicked(True)
+    #         else:
+    #             self.cells[row][col].setClicked(False)
 
     def cellClicked(self):
         for i in range(81):
             row = i // 9
             col = i % 9
             if self.cells[row][col].wasClicked():
-                return True
+                if row != self.clickedCell[0] and col != self.clickedCell[1]: # checking not prev clicked cell
+                    self.cells[row][col].setClicked(True)
+                    self.cells[self.clickedCell[0]][self.clickedCell[1]].setClicked(False)
+                    self.clickedCell=[row, col]
+                    break
+                else:
+                    self.cells[row][col].setClicked(False)
+                    self.clickedCell=[-1, -1]
 
-        return False
+    def setCellValue(self, char):
+        if char.isdigit() and self.clickedCell[0] >= 0 and self.clickedCell[1] >= 0:
+            self.cells[self.clickedCell[0]][self.clickedCell[1]].setValue(int(char))
 
     def drawBoard(self):
         pygame.draw.rect(screen, black_color, self.surface, 3)
@@ -237,8 +249,9 @@ def main():
                     board.autoGenerate()
                 if solveButton.clicked():
                     board.solveBoard(0)
-                if board.cellClicked():
-                    board.clickCell()
+                board.cellClicked()
+            if event.type == pygame.KEYDOWN:
+                board.setCellValue(event.unicode)
 
         screen.fill(bg_color)
 
