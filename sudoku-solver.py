@@ -1,4 +1,4 @@
-import pygame, sys
+import pygame, sys, random
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -119,19 +119,58 @@ class Board():
                 self.cells[i].append(Cell(i, j, startingBoard[i][j]))
         self.cells[0][0].setClicked(True)
 
-    def autoGenerate(self):
-        print('TODO AUTOGENERATE BOARD')
+    def make_board(self, m=3):
+        """Return a random filled m**2 x m**2 Sudoku board."""
+        n = m ** 2
+        board = []
+        for i in range(9):
+            board.append([])
+            for j in range(9):
+                board[i].append(Cell(i, j, 0))
 
-    def verifyConstraints(self, row, col, value):
+        def search(c=0):
+            "Recursively search for a solution starting at position c."
+
+            if c + 1 >= n ** 2:
+                return board
+
+            row = c // n
+            col = c % n
+            numbers = list(range(1, n + 1))
+            random.shuffle(numbers)
+
+            boardComplete = None
+
+            for x in numbers:
+                if self.verifyConstraints(row, col, x, board):
+                    board[row][col].setValue(x)
+                    boardComplete = search(c + 1)
+                    if boardComplete != None:
+                        break
+                    else:
+                        board[row][col].setValue(0)
+                else:
+                    # No number is valid in this cell: backtrack and try again.
+                    boardComplete = None
+
+            return boardComplete
+
+        return search()
+
+    def autoGenerate(self):
+        board = self.make_board()
+        self.cells = board
+
+    def verifyConstraints(self, row, col, value, cells):
 
         # verifying unique nums in row
         for i in range(9):
-            if self.cells[row][i].value == value:
+            if cells[row][i].value == value:
                 return False
 
         #verifying unique nums in col
         for i in range(9):
-            if self.cells[i][col].value == value:
+            if cells[i][col].value == value:
                 return False
 
         # verifying unique nums in square group
@@ -143,7 +182,7 @@ class Board():
         for i in range(9):
             row = i // 3
             col = i % 3
-            valuesInGroup.append(self.cells[squareRow*3+row][squareCol*3 + col].getValue())
+            valuesInGroup.append(cells[squareRow*3+row][squareCol*3 + col].getValue())
 
         return value not in valuesInGroup
 
@@ -165,7 +204,7 @@ class Board():
 
         if (self.cells[row][col].value == 0):
             for i in range(1, 10):
-                if (self.verifyConstraints(row, col, i)):
+                if (self.verifyConstraints(row, col, i, self.cells)):
                     self.cells[row][col].setValue(i)
 
                     self.cells[row][col].setAnalyzing(False)
@@ -191,27 +230,17 @@ class Board():
         self.cells[row][col].setAnalyzing(False)
         return win
 
-    # kinda redundant
-    # def clickCell(self):
-    #     for i in range(81):
-    #         row = i // 9
-    #         col = i % 9
-    #         if self.cells[row][col].wasClicked():
-    #             self.cells[row][col].setClicked(True)
-    #         else:
-    #             self.cells[row][col].setClicked(False)
-
     def cellClicked(self):
         for i in range(81):
             row = i // 9
             col = i % 9
             if self.cells[row][col].wasClicked():
-                if row != self.clickedCell[0] and col != self.clickedCell[1]: # checking not prev clicked cell
+                if row != self.clickedCell[0] or col != self.clickedCell[1]: # checking not prev clicked cell
                     self.cells[row][col].setClicked(True)
                     self.cells[self.clickedCell[0]][self.clickedCell[1]].setClicked(False)
                     self.clickedCell=[row, col]
                     break
-                else:
+                elif row == self.clickedCell[0] and col == self.clickedCell[1]:
                     self.cells[row][col].setClicked(False)
                     self.clickedCell=[-1, -1]
 
