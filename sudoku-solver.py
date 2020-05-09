@@ -1,4 +1,6 @@
 import pygame, sys, random
+from tkinter import *
+from tkinter import messagebox
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -277,7 +279,13 @@ def main():
                 if resetButton.clicked():
                     board.autoGenerate()
                 if solveButton.clicked():
-                    board.solveBoard(0)
+                    win = board.solveBoard(0)
+                    if win:
+                        Tk().wm_withdraw()  # to hide the main window
+                        messagebox.showinfo('Board Solved', 'OK')
+                    else:
+                        Tk().wm_withdraw()  # to hide the main window
+                        messagebox.showinfo('Board Could Not be Solved', 'OK')
                 board.cellClicked()
             if event.type == pygame.KEYDOWN:
                 board.setCellValue(event.unicode)
